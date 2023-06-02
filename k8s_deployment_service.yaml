@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: node-hostname
+  name: node-hostname
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: node-hostname
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: node-hostname
+    spec:
+      volumes:
+      - name: tmpvol
+        emptyDir: {}
+      serviceAccountName: default
+      containers: 
+      - image: ezzy187/node-hostname:v1.0.0
+        name: node-hostname
+        volumeMounts:
+        - name: tmpvol
+          mountPath: /tmp
+        securityContext:
+          runAsUser: 100
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: node-hostname
+  name: node-hostname-svc
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: node-hostname
+  type: NodePort
